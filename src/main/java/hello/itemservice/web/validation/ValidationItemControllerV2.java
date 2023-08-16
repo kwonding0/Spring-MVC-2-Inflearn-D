@@ -58,7 +58,8 @@ public class ValidationItemControllerV2 {
     }
 
     /*@PostMapping("/add")*/
-    //BindingResult의 위치는 꼭 검증해야하는 타겟 다음에 와야함. item객체에 bingResult를 담기 때문..(?)
+    //BindingResult의 위치는 꼭 검증해야하는 타겟 다음에 와야함. 그래야 자기가 검증해야하는 객체를 인지함. (V2에 자동으로 binding 실패 오류를 넣어준다던가 할때 필요)
+    //BindingResult : 스프링이 제공하는 검증 오류를 보관하는 객체.
     public String addItemV1(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
 
         //검증 로직
@@ -97,7 +98,7 @@ public class ValidationItemControllerV2 {
 
     //BindingResult 가 없으면 400 오류가 발생하면서 컨트롤러가 호출되지 않고, 오류 페이지로 이동한다.
     //BindingResult 가 있으면 오류 정보( FieldError )를 BindingResult 에 담아서 컨트롤러를 정상 호출한다.
-    //bindingResult.addError(new FieldError("item", "itemName", item.getItemName(), true, null, null, "에러내용")); => binding 실패 시 스프링이 이렇게 오류를 넣은채로 컨트롤러 호출
+    //bindingResult.addError(new FieldError("item", "itemName", "qqq", true, null, null, "에러내용")); => binding 실패 시 스프링이 이렇게 오류를 넣은채로 컨트롤러 호출
     /*@PostMapping("/add")*/
     public String addItemV2(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
 
@@ -109,7 +110,7 @@ public class ValidationItemControllerV2 {
             bindingResult.addError(new FieldError("item", "price", item.getPrice(), false, null, null, "가격은 1,000 ~ 1,000,000 까지 허용합니다."));
         }
         if(item.getQuantity() == null || item.getQuantity() > 10000){
-            bindingResult.addError(new FieldError("item", "quantity", item.getItemName(), false, null, null, "수량은 최대 9,999까지 허용합니다."));
+            bindingResult.addError(new FieldError("item", "quantity", item.getQuantity(), false, null, null, "수량은 최대 9,999까지 허용합니다."));
         }
 
         //특정 필드가 아닌 복합 룰 검증
@@ -135,9 +136,6 @@ public class ValidationItemControllerV2 {
 
     /*@PostMapping("/add")*/
     public String addItemV3(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
-
-        log.info("objectName = {}", bindingResult.getObjectName());
-        log.info("target = {}", bindingResult.getTarget());
 
         if (!StringUtils.hasText(item.getItemName())) {
             bindingResult.addError(new FieldError("item", "itemName", item.getItemName(), false, new String[]{"required.item.itemName"}, null, null));
@@ -167,7 +165,7 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }
 
-    /*@PostMapping("/add")*/
+    @PostMapping("/add")
     public String addItemV4(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
 
         log.info("objectName = {}", bindingResult.getObjectName());
@@ -224,7 +222,7 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }
 
-    @PostMapping("/add")
+    /*@PostMapping("/add")*/
     public String addItemV6(@Validated @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
         //@Validated 검증기를 실행하라는 어노테이션이다.
         //이 어노테이션이 붙으면 앞서 WebDataBinder 에 등록한 검증기를 찾아서 실행
